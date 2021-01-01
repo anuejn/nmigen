@@ -395,6 +395,12 @@ class TemplatedPlatform(Platform):
         def tcl_quote(string):
             return '"' + re.sub(r"([$[\\])", r"\\\1", string) + '"'
 
+        def sdc_quote(string):
+            # synplify used in lattice diamond requires different quoting
+            # than standard tcl quoting: wrapped in curly braces but escaped
+            # as if wrapped in quotation marks.
+            return "{" + re.sub(r"([${}\\])", r"\\\1", string) + "}"
+
         def verbose(arg):
             if "NMIGEN_verbose" in os.environ:
                 return arg
@@ -417,6 +423,7 @@ class TemplatedPlatform(Platform):
                 compiled.environment.filters["ascii_escape"] = ascii_escape
                 compiled.environment.filters["tcl_escape"] = tcl_escape
                 compiled.environment.filters["tcl_quote"] = tcl_quote
+                compiled.environment.filters["sdc_quote"] = sdc_quote
             except jinja2.TemplateSyntaxError as e:
                 e.args = ("{} (at {}:{})".format(e.message, origin, e.lineno),)
                 raise
